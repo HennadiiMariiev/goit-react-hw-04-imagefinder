@@ -1,0 +1,99 @@
+@import '../AppComponent/variables.module.scss';
+
+.Searchbar {
+    margin-bottom: 1rem;
+
+    &__title {
+        text-transform: uppercase;
+        text-align: center;
+        font-size: 3rem;
+        color: #FFFFFF;
+  
+        margin: 0 0 1.25rem;
+    }
+}
+
+.SearchForm {
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+
+    @media (min-width: 768px) {
+      justify-content: center;
+      align-items: center;
+    }
+
+    &__input {
+        width: 70vw;
+        margin-right: 1rem;
+        border: 0;
+
+        font-size: 1.25rem;
+        outline: none;
+
+        @media (min-width: 768px) {
+            width: 50vw;
+          }
+    }
+
+    &__button {
+        min-width: 4rem;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        cursor: pointer;
+        border-radius: .5rem;
+        color: $text-color;
+        background-color: #FFFFFF;
+        border: 0;
+
+        transition: $timing-function $animation-duration;
+    }
+
+    &__button:hover{
+        transform: translateY(-0.25rem);
+        box-shadow: 3px 3px 4px -1px rgba(0, 0, 0, 0.56);
+    }
+
+    &__button:disabled {
+        background-color: #d3d3d3;
+        transform: none;
+        box-shadow: none;
+    }
+
+    &__input,
+    &__button {
+        padding: 0.75rem;
+    }
+
+    &__button:not(:last-child) {
+            margin-right: 1rem;
+    }
+
+    &__label {
+        font-size: 1.25rem;
+        line-height: 1.25rem;
+        font-weight: 400;
+        text-transform: uppercase;
+
+        display: none;
+
+        @media (min-width: 768px) {
+            display: unset;
+        }
+    }
+
+    &__input:focus {
+        outline: 2px solid #3a66e8;
+    }
+  }
+
+  .Material__icon {
+      margin: 0;
+
+      @media (min-width: 768px) {
+        margin-right: 0.5rem;
+    }
+  }
