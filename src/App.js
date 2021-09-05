@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Searchbar } from './Components/Searchbar/Searchbar.jsx';
 import ImageApiService from './apiService/apiService.js';
 import { ImageGallery } from './Components/ImageGallery/ImageGallery.jsx';
@@ -18,54 +18,82 @@ import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 
 const imageApiService = new ImageApiService();
 
-function App() {
+export default function App() {
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(null);
-  const [page, setPage] = useState(0);
+
+  const [page, setPage] = useState(null);
+  const [inputValue, setInputValue] = useState('');
+
+  useEffect(() => {
+    if (!inputValue) {
+      return;
+    }
+
+    toggleLoader();
+
+    imageApiService
+      .fetchRequest(inputValue)
+      .then((response) => response.hits)
+      .then((imagesArray) => {
+        setImages((images) => [...images, ...imagesArray]);
+        showNotification(page, imagesArray);
+      })
+      .then(() => {
+        toggleLoader();
+        if (page > 1) scrollDown();
+      })
+      .catch((error) => notificate('error', error));
+  }, [page]);
+
+  useEffect(() => {
+    if (inputValue === '') {
+      setImages([]);
+      setPage(imageApiService.resetPage());
+    }
+  }, [inputValue]);
 
   const toggleLoader = () => {
     setIsLoading((isLoading) => !isLoading);
   };
 
-  const proceedFetch = async (query, warnMessage, isFirstTimeFetch) => {
-    try {
-      const response = await imageApiService.fetchRequest(query);
+  const onInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
 
-      const imagesArray = await response.hits;
+  const onClear = () => {
+    setImages([]);
+    setInputValue('');
+    imageApiService.resetQuery();
+  };
 
-      isFirstTimeFetch ? setImages([...imagesArray]) : setImages([...images, ...imagesArray]);
+  const onSubmit = (event) => {
+    event.preventDefault();
 
-      if (imagesArray.length === 0) {
-        notificate('warning', warnMessage);
-      } else {
-        notificate('success', `${imagesArray.length} new images loaded on "${query}" query. Total: ${images.length}`);
-      }
-    } catch (error) {
-      notificate('error', error);
-    } finally {
-      toggleLoader();
-      if (!isFirstTimeFetch) scrollDown();
+    setPage(imageApiService.page);
+  };
+
+  const switchNextPage = () => {
+    setPage(imageApiService.nextPage());
+  };
+
+  const showNotification = (page, responseArray) => {
+    let type = null;
+    let message = null;
+
+    if (responseArray.length === 0) {
+      type = 'warning';
+      message = page > 1 ? 'No more images found on your query' : 'No images found on your query';
+    } else if (responseArray.length > 0) {
+      type = 'success';
+      message = `${responseArray.length} new images loaded on "${imageApiService.query}" query. Total: ${
+        images.length + responseArray.length
+      }`;
     }
-  };
 
-  const onSubmit = async (query) => {
-    toggleLoader();
-
-    proceedFetch(query, 'No images found on your query', true);
-
-    console.log('images.length: ', images.length);
-  };
-
-  const loadMoreImages = async () => {
-    toggleLoader();
-    imageApiService.nextPage();
-
-    const currentQuery = imageApiService.query;
-
-    proceedFetch(currentQuery, 'No more images found on your query', false);
-    console.log('images.length: ', images.length);
+    return notificate(type, message);
   };
 
   const onGalleryListClick = (event) => {
@@ -92,13 +120,13 @@ function App() {
 
   return (
     <div className={styles.App}>
-      <Searchbar onSubmit={onSubmit} onClear={() => setImages([])} />
+      <Searchbar value={inputValue} onInputChange={onInputChange} onSubmit={onSubmit} onClear={onClear} />
 
       <ImageGallery imagesArray={images} onClick={onGalleryListClick} />
 
       {isLoading && <Loader type="Circles" color="#00BFFF" height={100} width={100} />}
 
-      {!!images.length && !isLoading && <LoadMoreButton loadMoreImages={loadMoreImages} />}
+      {!!images.length && !isLoading && <LoadMoreButton loadMoreImages={switchNextPage} />}
 
       {isModalOpen && (
         <Modal
@@ -119,5 +147,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
