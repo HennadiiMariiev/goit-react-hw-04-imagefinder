@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Searchbar } from './Components/Searchbar/Searchbar.jsx';
-import ImageApiService from './apiService/apiService.js';
-import { ImageGallery } from './Components/ImageGallery/ImageGallery.jsx';
+import Searchbar from './Components/Searchbar/Searchbar';
+import SearchBox from './Components/SearchBox/SearchBox';
+import ImageApiService from './apiService/apiService';
+import ImageGallery from './Components/ImageGallery/ImageGallery';
+import notificate from './utils/notification';
+import LoadMoreButton from './Components/LoadMoreButton/LoadMoreButton';
+import scrollDown from './utils/scrollDown';
+import Modal from './Components/Modal/Modal';
+
 import { ToastContainer } from 'react-toastify';
 import Loader from 'react-loader-spinner';
-
-import notificate from './utils/notification.js';
-import { LoadMoreButton } from './Components/LoadMoreButton/LoadMoreButton.jsx';
-import scrollDown from './utils/scrollDown.js';
-import Modal from './Components/Modal/Modal.jsx';
 import ScrollToTop from 'react-scroll-up';
 import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 
@@ -18,24 +19,37 @@ import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 
 const imageApiService = new ImageApiService();
 
+const useLocalStorage = () => {
+  const [state, setState] = useState(JSON.parse(localStorage.getItem('search')) || []);
+
+  useEffect(() => {
+    localStorage.setItem('search', JSON.stringify(state));
+  }, [state]);
+
+  return [state, setState];
+};
+
 export default function App() {
+  const [query, setQuery] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const [page, setPage] = useState(null);
+
   const [images, setImages] = useState([]);
+  const [searched, setSearched] = useLocalStorage();
+
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(null);
 
-  const [page, setPage] = useState(null);
-  const [inputValue, setInputValue] = useState('');
-
   useEffect(() => {
-    if (!inputValue) {
+    if (query === '') {
       return;
     }
 
     toggleLoader();
 
     imageApiService
-      .fetchRequest(inputValue)
+      .fetchRequest(query)
       .then((response) => response.hits)
       .then((imagesArray) => {
         setImages((images) => [...images, ...imagesArray]);
@@ -43,15 +57,22 @@ export default function App() {
       })
       .then(() => {
         toggleLoader();
-        if (page > 1) scrollDown();
+
+        if (page > 1) {
+          scrollDown();
+        }
+
+        if (!searched.includes(query)) {
+          setSearched((searched) => [...searched, query]);
+        }
       })
       .catch((error) => notificate('error', error));
-  }, [page]);
+  }, [page, query]);
 
   useEffect(() => {
     if (inputValue === '') {
       setImages([]);
-      setPage(imageApiService.resetPage());
+      setQuery('');
     }
   }, [inputValue]);
 
@@ -72,11 +93,30 @@ export default function App() {
   const onSubmit = (event) => {
     event.preventDefault();
 
-    setPage(imageApiService.page);
+    if (inputValue !== imageApiService.query) {
+      setImages([]);
+      imageApiService.resetQuery();
+    }
+
+    setQuery(inputValue);
   };
 
   const switchNextPage = () => {
     setPage(imageApiService.nextPage());
+  };
+
+  const onSearchedClick = (event) => {
+    if (event.target.value === query) return;
+
+    onClear();
+    setInputValue(event.target.value);
+    setQuery(event.target.value);
+    setPage(1);
+  };
+
+  const isDisabled = () => {
+    if (inputValue.trim() === '' || query === inputValue) return true;
+    return false;
   };
 
   const showNotification = (page, responseArray) => {
@@ -88,7 +128,7 @@ export default function App() {
       message = page > 1 ? 'No more images found on your query' : 'No images found on your query';
     } else if (responseArray.length > 0) {
       type = 'success';
-      message = `${responseArray.length} new images loaded on "${imageApiService.query}" query. Total: ${
+      message = `${responseArray.length} new images loaded on "${query}" query. Total: ${
         images.length + responseArray.length
       }`;
     }
@@ -120,7 +160,15 @@ export default function App() {
 
   return (
     <div className={styles.App}>
-      <Searchbar value={inputValue} onInputChange={onInputChange} onSubmit={onSubmit} onClear={onClear} />
+      <Searchbar
+        value={inputValue}
+        onInputChange={onInputChange}
+        onSubmit={onSubmit}
+        onClear={onClear}
+        isDisabled={isDisabled()}
+      />
+
+      {<SearchBox searched={searched} onSearchedClick={onSearchedClick} onSearchedClear={() => setSearched([])} />}
 
       <ImageGallery imagesArray={images} onClick={onGalleryListClick} />
 

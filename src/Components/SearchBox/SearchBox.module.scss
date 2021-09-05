@@ -1,0 +1,31 @@
+@import '../AppComponent/variables.module.scss';
+
+.SearchBox {
+    display: flex;
+    flex-wrap: wrap;
+
+    margin: -0.5rem -0.5rem 1rem;
+
+    &Button, &Clear {
+      margin: 0.5rem;
+      border: 0;
+      font-size: 1.5rem;
+      padding: 0.35rem 0.5rem;
+      background-color: white;
+      color:rgba(0, 0, 0, 0.6);
+      transition: $animation-duration $timing-function;
+
+      cursor: pointer;
+    }
+
+    &Clear {
+        background-color: #F0F0F0;
+        font-weight: 600;
+    }
+
+    &Button:hover,
+    &Clear:hover {
+            transform: translateY(-0.25rem);
+            box-shadow: 3px 3px 4px -1px rgba(0, 0, 0, 0.56);
+    }
+  }

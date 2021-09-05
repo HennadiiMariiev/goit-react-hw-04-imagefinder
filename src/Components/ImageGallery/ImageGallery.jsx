@@ -1,7 +1,7 @@
 import styles from './ImageGallery.module.scss';
-import { ImageGalleryItem } from '../ImageGalleryItem/ImageGalleryItem';
+import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 
-export const ImageGallery = ({ imagesArray, onClick }) => {
+export default function ImageGallery({ imagesArray, onClick }) {
   const { ImageGallery } = styles;
 
   return (
@@ -21,4 +21,4 @@ export const ImageGallery = ({ imagesArray, onClick }) => {
       ))}
     </ul>
   );
-};
+}

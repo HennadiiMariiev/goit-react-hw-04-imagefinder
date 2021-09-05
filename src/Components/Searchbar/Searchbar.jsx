@@ -4,7 +4,7 @@ import ClearIcon from '@material-ui/icons/Clear';
 
 import styles from './Searchbar.module.scss';
 
-function Searchbar({ value, onInputChange, onSubmit, onClear }) {
+export default function Searchbar({ value, onInputChange, onSubmit, onClear, isDisabled }) {
   const {
     Searchbar,
     Searchbar__title,
@@ -30,7 +30,7 @@ function Searchbar({ value, onInputChange, onSubmit, onClear }) {
             onChange={onInputChange}
           />
 
-          <button type="submit" className={SearchForm__button} disabled={value.trim() === ''}>
+          <button type="submit" className={SearchForm__button} disabled={isDisabled}>
             <SearchIcon className={Material__icon} />
             <span className={SearchForm__label}>Search</span>
           </button>
@@ -43,5 +43,3 @@ function Searchbar({ value, onInputChange, onSubmit, onClear }) {
     </>
   );
 }
-
-export { Searchbar };

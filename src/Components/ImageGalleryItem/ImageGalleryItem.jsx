@@ -9,7 +9,16 @@ const onLoadClick = (href) => {
   FileSaver.saveAs(href, 'image.jpg');
 };
 
-export const ImageGalleryItem = ({ webformatURL, tags, largeImageURL, likes, views, comments, downloads, onClick }) => {
+export default function ImageGalleryItem({
+  webformatURL,
+  tags,
+  largeImageURL,
+  likes,
+  views,
+  comments,
+  downloads,
+  onClick,
+}) {
   const { Card, Card__wrapper, Stats, Stats__item, Card__image, Material__icon, Stats__load } = styles;
 
   return (
@@ -41,4 +50,4 @@ export const ImageGalleryItem = ({ webformatURL, tags, largeImageURL, likes, vie
       </div>
     </li>
   );
-};
+}
