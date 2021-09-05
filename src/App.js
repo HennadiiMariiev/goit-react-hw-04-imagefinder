@@ -23,6 +23,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(null);
+  const [page, setPage] = useState(0);
 
   const toggleLoader = () => {
     setIsLoading((isLoading) => !isLoading);
